@@ -1,0 +1,46 @@
+# pyproject.toml
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "timectl"
+version = "0.1.0"
+authors = [
+    {name = "Cristian Hernández"}
+]
+description = "Worklog for devs"
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = [
+    "click",
+    "questionary",
+    "rich",
+    "pyyaml",
+    "pytest",
+    "python-git",
+    "pytest-mock",
+    "pytest-cov"
+]
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]
+exclude = [".git", "__pycache__", "build", "dist"]
+max-complexity = 10
+
+# If you're using with other tools like black, you might have:
+[tool.black]
+line-length = 88
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+addopts = "-v --cov=src"
+
+
+[project.scripts]
+timectl = "src.main:cli"
+
+[tool.setuptools]
+packages = ["src", "src.commands"]
