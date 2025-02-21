@@ -1,9 +1,5 @@
 # timectl
 
-
-
-# timectl
-
 <div align="center">
 
 ![timectl](https://img.shields.io/badge/status-in%20development-yellow)

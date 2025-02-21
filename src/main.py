@@ -1,6 +1,6 @@
 import click
 from rich.console import Console
-from .commands import project_commands,config_commands
+from .commands import project_commands, config_commands
 
 
 console = Console()
@@ -18,10 +18,12 @@ def get():
     """Create resources"""
     pass
 
+
 @cli.group()
 def create():
     """Create resources"""
     pass
+
 
 @cli.group()
 def config():
@@ -40,7 +42,6 @@ create.add_command(project_commands.create_project)
 
 # Config commands
 config.add_command(config_commands.set_config)
-config.add_command(config_commands.unset_config)
 config.add_command(config_commands.view_config)
 config.add_command(config_commands.init_config)
 
