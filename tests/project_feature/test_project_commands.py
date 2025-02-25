@@ -5,6 +5,7 @@ import json
 from click.testing import CliRunner
 from src.main import cli
 from src.commands.config_commands import config
+from unittest.mock import MagicMock
 
 
 @pytest.fixture
@@ -105,3 +106,72 @@ def test_create_duplicate_project(runner, temp_config):
     result = runner.invoke(cli, ['create', 'project', 'test'])
     assert result.exit_code == 0
     assert 'Project test already exists!' in result.output
+
+
+def test_create_issue(runner, temp_config):
+    result = runner.invoke(config, ['init'])
+
+    # Create initial project
+    runner.invoke(cli, ['create', 'project', 'test'])
+    
+     # Create an issue
+    result = runner.invoke(cli, ['create', 'issue', '-n', 'login', '-p', 'test'])
+    assert result.exit_code == 0
+    assert 'Issue login created in project test'
+
+
+@pytest.fixture
+# Mocked configuration data to simulate a project with no issues
+def mock_config():
+    return {
+        "projects": {
+            "test_project": {
+                "issues": []
+            }
+        }
+    }
+
+def test_create_issue_success(mock_config, mocker):
+    # Mock the load_config and save_config functions
+    mocker.patch('src.commands.project_commands.load_config', return_value=mock_config)
+    save_config_mock = MagicMock()
+    mocker.patch('src.commands.project_commands.save_config',save_config_mock)  # Mock save_config to do nothing
+    
+
+    runner = CliRunner()
+
+    # Run the Click command using CliRunner
+    result = runner.invoke(cli, ['create','issue','-p', 'test_project', '-n', 'New Issue'])
+
+    # Ensure the result was successful
+    assert result.exit_code == 0
+    assert 'Issue New Issue created in project test_project' in result.output
+
+    # Verify that the issue was added to the mock_config
+    assert len(mock_config["projects"]["test_project"]["issues"]) == 1
+    assert mock_config["projects"]["test_project"]["issues"][0]["name"] == "New Issue"
+    assert "time_entries" in mock_config["projects"]["test_project"]["issues"][0]
+    assert "created_at" in mock_config["projects"]["test_project"]["issues"][0]
+
+    # Verify that save_config was called with the updated config
+    save_config_mock.assert_called_once()
+    updated_config = save_config_mock.call_args[0][0]
+
+    # Ensure that the save_config was called with the updated mock_config
+    assert len(updated_config["projects"]["test_project"]["issues"]) == 1
+    assert updated_config["projects"]["test_project"]["issues"][0]["name"] == "New Issue"
+    assert "time_entries" in updated_config["projects"]["test_project"]["issues"][0]
+    assert "created_at" in updated_config["projects"]["test_project"]["issues"][0]
+
+def test_create_issue_project_not_found(mock_config, mocker):
+    # Mock the load_config to simulate no existing project
+    mocker.patch('src.commands.project_commands.load_config', return_value={"projects": {}})
+    
+    runner = CliRunner()
+
+    # Run the Click command using CliRunner
+    result = runner.invoke(cli, ['create','issue','-p', 'non_existing_project', '-n', 'New Issue'])
+
+    # Ensure the result was successful
+    assert result.exit_code == 0
+    assert 'Project non_existing_project does not exist yet!' in result.output

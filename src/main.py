@@ -39,6 +39,7 @@ get.add_command(project_commands.get_projects)
 # Project commands
 cli.add_command(project_commands.project)
 create.add_command(project_commands.create_project)
+create.add_command(project_commands.create_issue)
 
 # Config commands
 config.add_command(config_commands.set_config)

@@ -12,6 +12,28 @@ def project():
     pass
 
 
+@click.command(name="issue")
+@click.option("-p", "--project", required=True, help="Project name")
+@click.option("-n", "--name", required=True, help="Issue name")
+def create_issue(project, name):
+    """Create a new issue"""
+    config = load_config()
+    project_name = project
+    issue_name = name
+
+    if project_name not in config["projects"]:
+        console.print(f"[red]Project {project_name} does not exist yet![/]")
+        return
+    new_issue = {
+        "name": issue_name,
+        "time_entries": [],
+        "created_at": str(datetime.now().isoformat())
+    }
+    config["projects"][project_name]["issues"].append(new_issue)
+    save_config(config)
+    console.print(f"[green]Issue {name} created in project {project}[/green]")
+
+
 @click.command(name="project")
 @click.argument("name")
 def create_project(name):
@@ -25,6 +47,7 @@ def create_project(name):
 
     config["projects"][project_name] = {
         "name": project_name,
+        "issues": [],
         "created_at": str(datetime.now().isoformat())
     }
     save_config(config)
