@@ -1,74 +1,54 @@
-import click
-from rich.console import Console
-from rich.table import Table
-from .config_commands import load_config, save_config
-from datetime import datetime
-console = Console()
+# tests/project_feature/test_project_commands.py
+
+import os
+import json
+import tempfile
+import pytest
+from click.testing import CliRunner
+from src.commands.project_commands import create_project, create_issue, get_projects
 
 
-@click.group()
-def project():
-    """Project management commands"""
-    pass
+@pytest.fixture
+def temp_config(tmp_path):
+    config = {"projects": {}}
+    config_file = tmp_path / "config.json"
+    with config_file.open("w") as f:
+        json.dump(config, f)
+    yield config_file
 
 
-@click.command(name="issue")
-@click.option("-p", "--project", required=True, help="Project name")
-@click.option("-n", "--name", required=True, help="Issue name")
-def create_issue(project, name):
-    """Create a new issue"""
-    config = load_config()
-    project_name = project
-    issue_name = name
-
-    if project_name not in config["projects"]:
-        console.print(f"[red]Project {project_name} does not exist yet![/]")
-        return
-    new_issue = {
-        "name": issue_name,
-        "time_entries": [],
-        "created_at": str(datetime.now().isoformat())
-    }
-    config["projects"][project_name]["issues"].append(new_issue)
-    save_config(config)
-    console.print(f"[green]Issue {name} created in project {project}[/green]")
+def test_create_project(temp_config):
+    runner = CliRunner()
+    result = runner.invoke(create_project, ["TestProject"])
+    assert result.exit_code == 0
+    assert "Project TestProject created successfully" in result.output
 
 
-@click.command(name="project")
-@click.argument("name")
-def create_project(name):
-    """Create a new project"""
-    config = load_config()
-    project_name = name
-
-    if project_name in config["projects"]:
-        console.print(f"[red]Project {project_name} already exists![/]")
-        return
-
-    config["projects"][project_name] = {
-        "name": project_name,
-        "issues": [],
-        "created_at": str(datetime.now().isoformat())
-    }
-    save_config(config)
-    console.print(f"[green]Project {name} created successfully[/green]")
+def test_create_issue_nonexistent_project(temp_config):
+    runner = CliRunner()
+    result = runner.invoke(
+        create_issue, ["--project", "Nonexistent", "--name", "Issue1"]
+    )
+    assert result.exit_code == 0
+    assert "Project Nonexistent does not exist yet" in result.output
 
 
-@click.command(name="projects")
-def get_projects():
-    """List all projects"""
-    config = load_config()
-    if not config["projects"]:
-        console.print("[yellow]No projects found.[/]")
-        return
+def test_get_projects_no_projects(temp_config):
+    runner = CliRunner()
+    result = runner.invoke(get_projects)
+    assert result.exit_code == 0
+    assert "No projects found" in result.output
 
-    table = Table(box=None)
-    table.add_column("Project", style="green")
-    table.add_column("Created")
 
-    # Use .items() to get both key and value, and access created_at from project data
-    for name, project_data in config["projects"].items():
-        table.add_row(name.upper(), project_data["created_at"])
-
-    # Print table once after all rows are added
-    console.print(table)
+def test_create_issue(temp_config):
+    runner = CliRunner()
+    # First, create a project.
+    runner.invoke(create_project, ["TestProject"])
+    # Then, create an issue within that project.
+    result = runner.invoke(
+        create_issue, ["--project", "TestProject", "--name", "Issue1"]
+    )
+    assert result.exit_code == 0
+    assert (
+        "Issue Issue1 created in project TestProject" in result.output
+    )

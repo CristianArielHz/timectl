@@ -113,8 +113,8 @@ def test_create_issue(runner, temp_config):
 
     # Create initial project
     runner.invoke(cli, ['create', 'project', 'test'])
-    
-     # Create an issue
+
+    # Create an issue
     result = runner.invoke(cli, ['create', 'issue', '-n', 'login', '-p', 'test'])
     assert result.exit_code == 0
     assert 'Issue login created in project test'
@@ -131,17 +131,18 @@ def mock_config():
         }
     }
 
+
 def test_create_issue_success(mock_config, mocker):
     # Mock the load_config and save_config functions
     mocker.patch('src.commands.project_commands.load_config', return_value=mock_config)
     save_config_mock = MagicMock()
-    mocker.patch('src.commands.project_commands.save_config',save_config_mock)  # Mock save_config to do nothing
-    
+    mocker.patch('src.commands.project_commands.save_config', save_config_mock)
 
     runner = CliRunner()
 
     # Run the Click command using CliRunner
-    result = runner.invoke(cli, ['create','issue','-p', 'test_project', '-n', 'New Issue'])
+    result = runner.invoke(cli, ['create', 'issue', '-p',
+                                 'test_project', '-n', 'New Issue'])
 
     # Ensure the result was successful
     assert result.exit_code == 0
@@ -159,18 +160,24 @@ def test_create_issue_success(mock_config, mocker):
 
     # Ensure that the save_config was called with the updated mock_config
     assert len(updated_config["projects"]["test_project"]["issues"]) == 1
-    assert updated_config["projects"]["test_project"]["issues"][0]["name"] == "New Issue"
-    assert "time_entries" in updated_config["projects"]["test_project"]["issues"][0]
-    assert "created_at" in updated_config["projects"]["test_project"]["issues"][0]
+    assert updated_config["projects"]["test_project"]
+    ["issues"][0]["name"] == "New Issue"
+    assert "time_entries" in updated_config["projects"]
+    ["test_project"]["issues"][0]
+    assert "created_at" in updated_config["projects"]
+    ["test_project"]["issues"][0]
+
 
 def test_create_issue_project_not_found(mock_config, mocker):
     # Mock the load_config to simulate no existing project
-    mocker.patch('src.commands.project_commands.load_config', return_value={"projects": {}})
-    
+    mocker.patch('src.commands.project_commands.load_config',
+                 return_value={"projects": {}})
+
     runner = CliRunner()
 
     # Run the Click command using CliRunner
-    result = runner.invoke(cli, ['create','issue','-p', 'non_existing_project', '-n', 'New Issue'])
+    result = runner.invoke(cli, ['create', 'issue', '-p',
+                                 'non_existing_project', '-n', 'New Issue'])
 
     # Ensure the result was successful
     assert result.exit_code == 0
