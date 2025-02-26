@@ -1,4 +1,3 @@
-# test/project_feature/test_project_commands.py
 import pytest
 import os
 import json
@@ -160,12 +159,10 @@ def test_create_issue_success(mock_config, mocker):
 
     # Ensure that the save_config was called with the updated mock_config
     assert len(updated_config["projects"]["test_project"]["issues"]) == 1
-    assert updated_config["projects"]["test_project"]
-    ["issues"][0]["name"] == "New Issue"
-    assert "time_entries" in updated_config["projects"]
-    ["test_project"]["issues"][0]
-    assert "created_at" in updated_config["projects"]
-    ["test_project"]["issues"][0]
+    first_issue = updated_config["projects"]["test_project"]["issues"][0]
+    assert first_issue["name"] == "New Issue"
+    assert "time_entries" in updated_config["projects"]["test_project"]["issues"][0]
+    assert "created_at" in updated_config["projects"]["test_project"]["issues"][0]
 
 
 def test_create_issue_project_not_found(mock_config, mocker):
