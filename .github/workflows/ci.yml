@@ -39,7 +39,7 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        run: pip install pytest pytest-cov
+        run: pip install --editable .
 
       - name: Run Pytest with Coverage
         run: pytest --cov=. --cov-report=xml
