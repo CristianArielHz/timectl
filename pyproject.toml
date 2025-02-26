@@ -20,7 +20,9 @@ dependencies = [
     "pytest",
     "python-git",
     "pytest-mock",
-    "pytest-cov"
+    "pytest-cov",
+    "bandit",
+    "safety"
 ]
 
 [tool.flake8]
